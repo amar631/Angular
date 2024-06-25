@@ -1,0 +1,323 @@
+import { Component } from '@angular/core';
+import { Item } from 'src/app/interfaces/item';
+import { OnlinesaleappService } from 'src/app/services/onlinesaleapp.service';
+
+@Component({
+  selector: 'app-removesalepost',
+  templateUrl: './removesalepost.component.html'
+
+})
+export class RemovesalepostComponent {
+
+  saleItemDetails: Item[];
+  showMsgDiv: boolean ;
+  errMsg: string;
+  status: boolean;
+  msg: string;
+
+  //Do not modify signature
+  constructor(private _saleService: OnlinesaleappService) { }
+
+  //Do not modify signature
+  ngOnInit() {
+    //To do implement necessary logic
+    this.getSaleItemDetails();
+    if (this.saleItemDetails == null) {
+      this.showMsgDiv = true;
+    }
+  }
+
+  //Do not modify signature
+  getSaleItemDetails() {
+    //To do implement necessary logic
+    this._saleService.getSaleItemDetails().subscribe(
+      responseSuccess => {
+        this.saleItemDetails = responseSuccess;
+        console.log(responseSuccess);
+        this.showMsgDiv = false;
+      },
+      responseError => {
+        this.saleItemDetails = null;
+        this.errMsg = responseError;
+      },
+      () => console.log( "Get sale item details displayed successfully")
+        
+    )
+  }
+
+  //Do not modify signature
+  deletePost(itemObj: Item) {
+    //To do implement necessary logic
+    this._saleService.removeSalePost(itemObj.itemId).subscribe(
+      responseSuccess => {
+        this.status = responseSuccess;
+        console.log(responseSuccess);
+        if (this.status ) {
+          this.msg = ("Deleted Successfully");
+          //console.log(this.status);
+          this.ngOnInit();
+        }
+        else {
+          this.msg = ("Some error Occurred");
+        }
+      },
+      responseError => {
+        this.errMsg = responseError();
+      },
+      () => console.log("Remove method executed successfully")
+    )
+  }
+}
+
+
+
+
+
+remove HTML
+
+<div style="text-align:center;">
+  <h1>Remove Sale Post</h1>
+  <div class="table-responsive">
+    <table class="table" style="border:5px solid rgba(220,230,242,1);" *ngIf="saleItemDetails">
+      <tr style="background-color:rgba(220,230,242,1); font-size:12pt">
+        <th>Item Name</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>ContactMailID</th>
+        <th>Delete</th>
+      </tr>
+      <!-- To Do :implement necessary logic here  -->
+      <tr id="saleItemEdit_id"  style="background-color:white" *ngFor ="let sale of saleItemDetails">
+        <td>{{sale.itemName}}</td>
+        <td>{{sale.description}}</td>
+        <td>{{sale.price}}</td>
+        <td>{{sale.emailId}}</td>
+
+        <!-- To Do :implement necessary button logic here  -->
+        <td><button type="button" id="delete-post-id" (click)="deletePost(sale)">Delete</button></td>
+
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { Item } from 'src/app/interfaces/item';
+import { OnlinesaleappService } from 'src/app/services/onlinesaleapp.service';
+
+@Component({
+  selector: 'app-postforsale',
+  templateUrl: './postforsale.component.html'
+})
+export class PostforsaleComponent implements OnInit{
+
+  @ViewChild(NgForm) ngForm: NgForm;
+  itemObj: Item;
+  status: boolean;
+  showDiv: boolean ;
+  errorMsg: string;
+  msg: string;
+  itemId:number;
+
+  //Do not modify signature
+  constructor(private _saleService: OnlinesaleappService) {}
+
+  //Do not modify signature
+  ngOnInit() {
+  }
+
+  //Do not modify signature
+  submitSalePostForm(form: NgForm) {
+    //To do implement necessary logic
+    console.log(form.value.emailId + "\n" + form.value.name + "\n" + form.value.description + "\n" + form.value.price);
+    this._saleService.postForSale(form.value).subscribe(
+
+      responseSuccess => {
+        this.status = responseSuccess;
+        this.showDiv = false;
+        console.log(responseSuccess);
+        if (this.status == true) {      
+          this.msg = ("post for sale is successfull");
+        }
+        else {
+          this.msg =("some error occurred")
+        }
+      },
+      responseError => {
+        this.errorMsg = responseError;
+      },
+      () => console.log("Post method executed successfully")
+
+    )
+  }
+}
+
+
+
+
+<div class="container">
+  <!-- To Do : implement necessary form logic here  -->
+  <form #SalePostForm="ngForm" (ngSubmit)="submitSalePostForm(SalePostForm)">
+    <div class="row">
+      <div class="col-md-4">
+      </div>
+      <div class="col-md-4">
+        <h2>Post For Sale</h2>
+        <h6 style="text-align:right;color:dimgrey;font-size:small">All fields are mandatory</h6>
+        <div class="form-group">
+          <div class="col" style="text-align:left">
+            <label style="font-weight:bold">Email ID </label>
+            <h6 style="text-align:right;color:dimgrey;font-size:small">Please provide a Registered mailId</h6>
+          </div>
+          <div class="col; input-group">
+              <!-- To Do : implement necessary form logic here  -->
+            <input type="text" id="add_mailid" name="emailId" #emailIdRef="ngModel" class="form-control" required ngModel>
+          </div>
+          <!-- To Do : implement necessary validation logic here  -->
+          <div id="add_valid_mailid" *ngIf ="emailIdRef.errors && (emailIdRef.dirty || emailIdRef.touched) "
+            style="text-align:left; padding-top:5px; color:red;">
+             <!-- To Do : implement necessary validation logic here  -->
+            <div [hidden]="!emailIdRef?.errors?.['required']">
+              <!-- validation message here -->
+              <p>&nbsp;Email id is mandatory</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col" style="text-align:left">
+            <label style="font-weight:bold">Item Name</label>
+          </div>
+          <div class="col; input-group">
+            <!-- To Do : implement necessary form logic here  -->
+            <input type="text" id="add-name" name="name" #nameRef="ngModel" class="form-control" required ngModel>
+          </div>
+          <!-- To Do : implement necessary validation logic here  -->
+          <div id="add_valid_name" *ngIf="nameRef.errors && (nameRef.dirty || nameRef.touched)"
+            style="text-align:left; padding-top:5px; color:red;">
+            <!-- To Do : implement necessary validation logic here  -->
+            <div [hidden]="!nameRef?.errors?.['required']">
+              <!-- validation message here -->
+              <p>&nbsp;ItemName is mandatory</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col" style="text-align:left">
+            <label style="font-weight:bold">Decription</label>
+          </div>
+          <div class="col; input-group">
+            <!-- To Do : implement necessary form logic here  -->
+            <input type="text" id="add-desc" name="description" #descriptionRef="ngModel" class="form-control" required ngModel>
+          </div>
+          <!-- To Do : implement necessary validation logic here  -->
+          <div id="add_valid_desc" *ngIf ="descriptionRef.errors && (descriptionRef.dirty || descriptionRef.touched)"
+            style="text-align:left; padding-top:5px; color:red;">
+            <!-- To Do : implement necessary validation logic here  -->
+            <div [hidden]="!descriptionRef?.errors?.['required']">
+              <!-- Validation message here -->
+              <p>&nbsp;Description is mandatory</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col" style="text-align:left">
+            <label style="font-weight:bold">Price</label>
+          </div>
+          <div class="col; input-group">
+            <!-- To Do : implement necessary form logic here  -->
+            <input type="number" id="add-price" name="price" #priceref="ngModel" class="form-control" required ngModel>
+          </div>
+          <!-- To Do : implement necessary validation logic here  -->
+          <div id="add_valid_price" *ngIf ="priceref.errors && (priceref.dirty || priceref.touched)"
+            style="text-align:left; padding-top:5px; color:red;">
+           <!-- To Do : implement necessary validation logic here  -->
+            <div [hidden]="!priceref?.errors?.['required']">
+              <!-- Validation message here -->
+              <p>&nbsp;Price is mandatory</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="text-align:left">
+          <!-- To Do implement necessary button logic here  -->
+          <button type="submit" class="btn" [disabled]="!SalePostForm.form.valid">Post</button>
+        </div>
+      </div>
+      <div class="col-md-4">
+      </div>
+    </div>
+    <div *ngIf="showDiv" style="color:red;text-align:center;">
+      {{msg}}
+    </div>
+    <div>
+      &nbsp;
+    </div>
+  </form>
+</div>
+
+
+
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, catchError, throwError } from 'rxjs';
+import { Item } from '../interfaces/item';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class OnlinesaleappService {
+  //Do not modify signature
+  //itemObj: Item[] = [];
+  constructor(private http:HttpClient) { }
+
+  //Do not modify signature
+  getSaleItemDetails():Observable<Item[]>{
+    //To do implement necessary logic here
+
+    return this.http.get<Item[]>('https://localhost:7144/api/OnlineSale/GetItemsForSale').pipe(catchError(this.errorHandler));
+  }
+
+  //Do not modify signature
+  postForSale(itemObj: Item): Observable<boolean> {
+    //To do implement necessary logic here
+    //console.log(this.itemObj);
+    var itemObj: Item = {
+      itemId: 0,
+      emailId: itemObj.emailId,
+      itemName: itemObj.itemName,
+      description: itemObj.description,
+      price: itemObj.price
+    };
+    console.log(itemObj.itemName);
+    return this.http.post<boolean>('https://localhost:7144/api/OnlineSale/SalePostForItems',itemObj).pipe(catchError(this.errorHandler));
+  }
+
+  //Do not modify signature
+  removeSalePost(itemId: number): Observable<boolean> {
+    //To do implement necessary logic here
+    //var saleObj = {
+    //  itemId: itemId,
+    //  emailId: "",
+    //  itemName: "",
+    //  description: "",
+    //  price: 0
+    //}
+    //let httpOptions = { headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: itemId };
+    return this.http.delete<boolean>('https://localhost:7144/api/OnlineSale/RemoveSalePost?itemId=' + itemId).pipe(catchError(this.errorHandler));
+  }
+
+  //Do not modify signature
+  errorHandler(error: HttpErrorResponse) {
+    //To do implement necessary logic here
+    console.error(error);
+    return throwError(error.message || "ServerError" );
+  }
+}
+
